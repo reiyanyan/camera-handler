@@ -104,3 +104,36 @@ export default class Camera {
   }
 }
 
+/////////////////////////////////
+
+const videoRef = ref<HTMLVideoElement>();
+    const canvasRef = ref<HTMLCanvasElement>();
+
+    onMounted(async () => {
+      camera.value = await new VxCamera(videoRef.value!, canvasRef.value!)
+        .setConstraint({
+          video: {
+            facingMode: "user",
+            width: {
+              ideal: 960,
+              min: 960,
+              max: 960,
+            },
+            height: {
+              ideal: 720,
+              min: 720,
+              max: 720,
+            },
+          },
+          audio: false,
+        })
+        .requestPermission()
+        .then((camera) => camera)
+        .catch((err) => {
+          console.log(err);
+        });
+    });
+
+    const startCamera = () => {
+      if (camera.value !== undefined) camera.value.start();
+    };
