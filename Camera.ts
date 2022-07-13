@@ -106,24 +106,34 @@ export default class Camera {
 
 /////////////////////////////////
 
-const videoRef = ref<HTMLVideoElement>();
+<template>
+  <div>
+    <video ref="videoRef" autoplay playsinline></video>
+    <canvas ref="canvasRef"></canvas>
+    <button @click="startCamera">start</button>
+    <button @click="mirror">mirror</button>
+    <button @click="flip">flip</button>
+    <button @click="snapB64">Snap b64</button>
+    <button @click="snapBlob">Snap blob</button>
+  </div>
+</template>
+
+<script lang="ts">
+import { defineComponent, ref, onMounted } from "vue";
+import VxCamera from "@/functions/Camera/VxCamera";
+
+export default defineComponent({
+  setup() {
+    const videoRef = ref<HTMLVideoElement>();
     const canvasRef = ref<HTMLCanvasElement>();
+    const camera = ref<VxCamera | void>();
+    const isMirror = ref(false);
 
     onMounted(async () => {
       camera.value = await new VxCamera(videoRef.value!, canvasRef.value!)
         .setConstraint({
           video: {
-            facingMode: "user",
-            width: {
-              ideal: 960,
-              min: 960,
-              max: 960,
-            },
-            height: {
-              ideal: 720,
-              min: 720,
-              max: 720,
-            },
+            facingMode: "environment",
           },
           audio: false,
         })
@@ -135,5 +145,35 @@ const videoRef = ref<HTMLVideoElement>();
     });
 
     const startCamera = () => {
-      if (camera.value !== undefined) camera.value.start();
+      camera.value?.start();
     };
+
+    const mirror = () => {
+      isMirror.value = !isMirror.value;
+      camera.value?.mirror(isMirror.value);
+    };
+
+    const flip = () => {
+      camera.value?.flipCamera();
+    };
+
+    const snapBlob = async () => {
+      console.log("Test.vue | snapBlob", await camera.value?.snapAsBlob().then((data) => data));
+    };
+
+    const snapB64 = async () => {
+      console.log("Test.vue | snapB64", await camera.value?.snapAsBase64().then((data) => data));
+    };
+
+    return {
+      startCamera,
+      videoRef,
+      canvasRef,
+      mirror,
+      flip,
+      snapB64,
+      snapBlob,
+    };
+  },
+});
+</script>
